@@ -1,0 +1,62 @@
+buildscript {
+	ext {
+		springBootVersion = '2.1.2.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.lrodriguez'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-jdbc')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-cache')
+	compile('javax.cache:cache-api:1.1.1')
+	runtime('org.postgresql:postgresql')
+	implementation('javax.xml.bind:jaxb-api:2.3.0')
+	compile ('org.projectlombok:lombok:1.18.8')
+
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+test {
+	systemProperties System.properties
+	systemProperty "spring.profiles.active", "test"
+	jvmArgs "-Dspring.test.context.cache.maxSize=1"
+
+	reports.junitXml.destination = file("$buildDir/test-results")
+
+	testLogging {
+		events "passed", "skipped", "failed", "standardError"
+	}
+
+	afterSuite { desc, result ->
+		if (!desc.parent)
+			println("${result.resultType} " +
+					"(${result.testCount} tests, " +
+					"${result.successfulTestCount} successes, " +
+					"${result.failedTestCount} failures, " +
+					"${result.skippedTestCount} skipped)")
+	}
+}
